@@ -1,8 +1,6 @@
 # Eye-MESD
 
-Eye-MESD is an ophthalmic vision foundation model. A ViT-L/14 student is pretrained with DINO, iBOT, and KoLeo, while a GRPO router distills three frozen teachers: EyeCLIP, RETFound, and DINOv2-Giant.
-
-The training code is based on [DINOv2](https://github.com/facebookresearch/dinov2).
+Eye-MESD pretrains a ViT-L/14 on ophthalmic images. The objective combines DINO, iBOT, and KoLeo with a GRPO router that distills three frozen teachers: EyeCLIP, RETFound, and a giant ViT.
 
 ## Pretrained model
 
@@ -25,7 +23,7 @@ Tested with PyTorch 2.1.2 and xFormers 0.0.23.post1.
 
 ```python
 import torch
-from dinov2.models.vision_transformer import vit_large
+from eye_mesd import vit_large
 
 model = vit_large(
     img_size=224,
@@ -38,30 +36,21 @@ model.load_state_dict(state)
 model.eval()
 ```
 
-`pos_embed` matches a 224×224 input. Larger inputs use the model's position-embedding interpolation.
+The released checkpoint matches a 224×224 input. Larger inputs use position-embedding interpolation.
 
 ## Training
 
-Put the image list at `data/images.json` (a list of paths, or a dict whose keys are paths) and set the teacher checkpoints in [`configs/vitl14.yaml`](configs/vitl14.yaml):
-
-- `student.pretrained_weights`: DINOv2 ViT-L/14
-- `distill.eyeclip_weights`: EyeCLIP
-- `distill.retfound_weights`: RETFound
-- `distill.giant_weights`: DINOv2 ViT-g/14
+Image paths go in `data/images.json`, as a list or as a dict keyed by path. Teacher checkpoints and the student initialization are set in [`configs/vitl14.yaml`](configs/vitl14.yaml).
 
 ```bash
-torchrun --nproc_per_node=2 dinov2/train/train.py \
-  --config-file configs/vitl14.yaml \
-  --output-dir output
+bash scripts/train.sh
 ```
 
-The released recipe uses 2 GPUs, batch size 80 per GPU, and 100 epochs. See the config for the optimizer, crops, and loss weights.
+The released recipe uses 2 GPUs, batch size 80 per GPU, and 100 epochs.
 
 ## License
 
-This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE).
-
-DINOv2 portions remain under the copyright of Meta Platforms, Inc. EyeCLIP, RETFound, and DINOv2-Giant weights are not included and stay under their own licenses.
+Apache License 2.0. See [LICENSE](LICENSE). Teacher checkpoints are not included.
 
 ## Citation
 
