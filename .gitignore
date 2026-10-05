@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+output/
+failed_paths.txt
+*.pth
+*.pt
+!weights/.gitkeep

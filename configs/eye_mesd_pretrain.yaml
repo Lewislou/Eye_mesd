@@ -1,0 +1,172 @@
+# Eye-MESD GRPO pretraining.
+# Hyperparameters match the run that produced iteration 479999.
+# Paths below are placeholders. See README.md.
+MODEL:
+  WEIGHTS: ''
+distill:
+  loss_name: KLDIV
+  eyeclip_weights: weights/eyeclip_visual.pt
+  retfound_weights: weights/RETFound_dinov2.pth
+  giant_weights: weights/dinov2_vitg14_reg4_pretrain.pth
+  EyeCLIP_loss_ratio: 1.5
+  EyeCLIP_patch_ratio: 0.75
+  RETFound_loss_ratio: 1.5
+  RETFound_patch_ratio: 0.75
+  Giant_loss_ratio: 1.5
+  Giant_patch_ratio: 0.75
+dino:
+  loss_weight: 1.0
+  head_n_prototypes: 131072
+  head_bottleneck_dim: 384
+  head_nlayers: 3
+  head_hidden_dim: 2048
+  k_cent_dino: 5
+  teacher_temp: 0.07
+  koleo_loss_weight: 0.1
+ibot:
+  loss_weight: 1.0
+  mask_sample_probability: 0.5
+  mask_ratio_min_max:
+  - 0.1
+  - 0.5
+  separate_head: true
+  head_n_prototypes: 131072
+  head_bottleneck_dim: 384
+  head_nlayers: 3
+  head_hidden_dim: 2048
+compute_precision:
+  grad_scaler: true
+  distill_teacher:
+    sharding_strategy: SHARD_GRAD_OP
+    mixed_precision:
+      param_dtype: bf16
+      reduce_dtype: bf16
+      buffer_dtype: fp32
+  distill_heads:
+    sharding_strategy: SHARD_GRAD_OP
+    mixed_precision:
+      param_dtype: bf16
+      reduce_dtype: fp32
+      buffer_dtype: fp32
+    eyeclip:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+    retfound:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+    giant:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+  teacher:
+    backbone:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: bf16
+        buffer_dtype: fp32
+    dino_head:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+    ibot_head:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+  student:
+    backbone:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: bf16
+        buffer_dtype: fp32
+    rl_router:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+    dino_head:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+    ibot_head:
+      sharding_strategy: SHARD_GRAD_OP
+      mixed_precision:
+        param_dtype: bf16
+        reduce_dtype: fp32
+        buffer_dtype: fp32
+train:
+  resume: false
+  batch_size_per_gpu: 80
+  dataset_path: Pathology:root=data/images.json
+  output_dir: output/eye_mesd_pretrain
+  saveckp_freq: 4
+  seed: 0
+  num_workers: 60
+  OFFICIAL_EPOCH_LENGTH: 7500
+  cache_dataset: true
+  centering: sinkhorn_knopp
+teacher:
+  momentum_teacher: 0.992
+  final_momentum_teacher: 1.0
+  warmup_teacher_temp: 0.04
+  teacher_temp: 0.07
+  warmup_teacher_temp_epochs: 30
+student:
+  arch: vit_large
+  patch_size: 14
+  drop_path_rate: 0.3
+  layerscale: 1.0e-05
+  drop_path_uniform: true
+  pretrained_weights: weights/dinov2_vitl14_pretrain.pth
+  ffn_layer: mlp
+  block_chunks: 4
+  qkv_bias: true
+  proj_bias: true
+  ffn_bias: true
+optim:
+  epochs: 100
+  warmup_epochs: 10
+  base_lr: 0.0002
+  # Recorded by the original run at global batch 80. Startup overwrites this
+  # field. The optimizer schedule uses base_lr, not this value. See README.
+  lr: 5.590169943749475e-05
+  min_lr: 1.0e-06
+  weight_decay: 0.04
+  weight_decay_end: 0.4
+  layerwise_decay: 0.95
+  patch_embed_lr_mult: 0.2
+  freeze_last_layer_epochs: 1
+  router_lr_multiplier: 0.2
+  clip_grad: 3.0
+  adamw_beta1: 0.9
+  adamw_beta2: 0.999
+  scaling_rule: sqrt_wrt_1024
+  freeze_last_layer: 1
+crops:
+  global_crops_scale:
+  - 0.32
+  - 1.0
+  local_crops_number: 8
+  local_crops_scale:
+  - 0.05
+  - 0.32
+  global_crops_size: 224
+  local_crops_size: 98
+evaluation:
+  eval_period_iterations: 15000
