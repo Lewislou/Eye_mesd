@@ -143,8 +143,6 @@ optim:
   epochs: 100
   warmup_epochs: 10
   base_lr: 0.0002
-  # Recorded by the original run at global batch 80. Startup overwrites this
-  # field. The optimizer schedule uses base_lr, not this value. See README.
   lr: 5.590169943749475e-05
   min_lr: 1.0e-06
   weight_decay: 0.04
