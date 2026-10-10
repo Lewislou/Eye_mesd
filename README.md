@@ -1,7 +1,5 @@
 # Eye-MESD
 
-ViT-L/14 pretrained on ophthalmic images.
-
 Download the weights: [Eye_mesd_pretrained.pth](https://github.com/Lewislou/Eye_mesd/releases/download/v1.0/Eye_mesd_pretrained.pth)
 
 ## Installation
